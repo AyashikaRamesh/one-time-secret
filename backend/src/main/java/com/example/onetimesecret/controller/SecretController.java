@@ -9,6 +9,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/secrets")
+@CrossOrigin(origins = "*")
 public class SecretController {
     private final SecretService secretService;
 
@@ -18,15 +19,27 @@ public class SecretController {
 
     @PostMapping
     public ResponseEntity<Map<String, String>> createSecret(@RequestBody Map<String, String> request) {
+        System.out.println("Received request: " + request);
         String content = request.get("content");
         String password = request.get("password");
         
+        System.out.println("Content: " + content);
+        System.out.println("Password: " + password);
+        
         if (content == null || content.isEmpty()) {
+            System.out.println("Content is null or empty");
             return ResponseEntity.badRequest().build();
         }
         
-        Secret secret = secretService.createSecret(content, password);
-        return ResponseEntity.ok(Map.of("id", secret.getId()));
+        try {
+            Secret secret = secretService.createSecret(content, password);
+            System.out.println("Created secret with ID: " + secret.getId());
+            return ResponseEntity.ok(Map.of("id", secret.getId()));
+        } catch (Exception e) {
+            System.err.println("Error creating secret: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/{id}/check")

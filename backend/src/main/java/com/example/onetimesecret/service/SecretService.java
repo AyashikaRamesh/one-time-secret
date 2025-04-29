@@ -2,8 +2,6 @@ package com.example.onetimesecret.service;
 
 import com.example.onetimesecret.model.Secret;
 import com.example.onetimesecret.repository.SecretRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -12,11 +10,9 @@ import java.util.Optional;
 @Service
 public class SecretService {
     private final SecretRepository secretRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public SecretService(SecretRepository secretRepository) {
         this.secretRepository = secretRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public Secret createSecret(String content, String password) {
@@ -27,7 +23,7 @@ public class SecretService {
         secret.setViewed(false);
         
         if (password != null && !password.isEmpty()) {
-            secret.setPasswordHash(passwordEncoder.encode(password));
+            secret.setPasswordHash(password);
         }
         
         return secretRepository.save(secret);
@@ -50,7 +46,7 @@ public class SecretService {
                 .filter(secret -> !secret.isViewed())
                 .filter(secret -> {
                     if (secret.getPasswordHash() != null) {
-                        return password != null && passwordEncoder.matches(password, secret.getPasswordHash());
+                        return password != null && password.equals(secret.getPasswordHash());
                     }
                     return true;
                 })
